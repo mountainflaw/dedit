@@ -61,7 +61,11 @@ Fast3DParser::Fast3DParser(const std::string &p, bool g) {
     geometryLayout = g;
 }
 
-void render_level() {
+/**
+ * Cycles through display list objects and executes them.
+ */
+
+void gfx_render_level() {
     for (uint32_t i = 0; i < dlVector.size(); i++) {
         dlVector[i].render();
     }
@@ -84,7 +88,7 @@ void gfx_resize_window(GLFWwindow* window, int width, int height) {
 void gfx_main() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     GLFWwindow* window = glfwCreateWindow(800, 800, "dedit", NULL, NULL);
@@ -97,12 +101,13 @@ void gfx_main() {
     glfwMakeContextCurrent(window);
     glViewport(0, 0, 800, 600);
     glfwSetFramebufferSizeCallback(window, gfx_resize_window);
+    glfwSwapInterval(120);
     gWindowSetup = true;
 
     while (!glfwWindowShouldClose(window)) {
         glClearColor(col[CR] / 255.0f, col[CG] / 255.0f, col[CB] / 255.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        render_level();
+        gfx_render_level();
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
