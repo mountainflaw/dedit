@@ -1,1 +1,2 @@
-g++ main.cxx gfx.cxx gui.cxx io.cxx obj.cxx imgui/imgui.cpp imgui/imgui_widgets.cpp imgui/imgui_draw.cpp -o dedit -Wall -isystem . -lpthread -lglfw -lGL
+#g++ main.cxx gfx.cxx gui.cxx io.cxx obj.cxx imgui/imgui.cpp imgui/imgui_widgets.cpp imgui/imgui_draw.cpp imgui/imgui_impl_glfw.cpp imgui/imgui_impl_opengl3.cpp -DIMGUI_IMPL_OPENGL_LOADER_GLEW -o dedit -O3 -fsanitize=address,undefined -Wall -isystem . -lpthread -lglfw -lGL -lGLEW
+g++ main.cxx gfx.cxx gui.cxx io.cxx obj.cxx imgui/imgui.cpp imgui/imgui_widgets.cpp imgui/imgui_draw.cpp imgui/imgui_impl_glfw.cpp imgui/imgui_impl_opengl3.cpp -DIMGUI_IMPL_OPENGL_LOADER_GLEW -o dedit -O3 -Wall -isystem . -lpthread -lglfw -lGL -lGLEW

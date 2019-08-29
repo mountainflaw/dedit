@@ -1,4 +1,7 @@
 #include <dedit.hxx>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
 
 enum GbiTypes { VTX, TRI1, TRI2, SETGEO, CLEARGEO };
 
@@ -7,6 +10,11 @@ struct Vtx {
     int16_t tc[2];
     uint8_t col[4];
 };
+
+/* renderer */
+
+static int16_t sVtxBuffer[64] = {0}; /* support for up to f3dex rej */
+static int16_t sVtxBufferColors[64] = {0};
 
 class DisplayList {
     public:
@@ -71,8 +79,14 @@ void gfx_render_level() {
     }
 }
 
+/* renderer */
+
 /* gui */
-uint8_t col[3] = { 128, 0, 255 };
+
+static uint8_t col[3] = { 128, 0, 255 };
+
+static void gfx_imgui_init() {
+}
 
 /* gl window stuff */
 
@@ -86,6 +100,7 @@ void gfx_resize_window(GLFWwindow* window, int width, int height) {
  */
 
 void gfx_main() {
+    const char* glsl_version = "#version 150";
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
@@ -98,18 +113,50 @@ void gfx_main() {
         glfwTerminate();
     }
 
+    bool err = glewInit();
+
+    if (err) {
+            fprintf(stderr, "Failed to initialize OpenGL loader!\n");
+            return;
+    }
+
     glfwMakeContextCurrent(window);
     glViewport(0, 0, 800, 600);
     glfwSetFramebufferSizeCallback(window, gfx_resize_window);
-    glfwSwapInterval(120);
     gWindowSetup = true;
 
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+    ImGui::StyleColorsDark();
+
     while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+        gfx_render_level();
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::Begin("Demo window");
+        ImGui::Button("Hello!");
+        ImGui::End();
+
         glClearColor(col[CR] / 255.0f, col[CG] / 255.0f, col[CB] / 255.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        gfx_render_level();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         glfwSwapBuffers(window);
-        glfwPollEvents();
+        dlVector.clear();
     }
+
+    //ImGui_ImplOpenGL3_Shutdown();
+    //ImGui_ImplGlfw_Shutdown();
+    //ImGui::DestroyContext();
+
     glfwTerminate();
 }
