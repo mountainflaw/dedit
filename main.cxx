@@ -12,6 +12,5 @@ int main(int argc, char* argv[]) {
     gLevelFile = argv[1];
     obj_init();
 
-    std::thread gfxThread (gfx_main);
-    gfxThread.join();
+    gfx_main();
 }
