@@ -22,10 +22,36 @@ class Fast3DParser {
     bool geometryLayout;
     std::string path;
 
+    /**
+     * this is the method that actually parses the gbi list
+     */
+
+    bool parse_gbi(const std::string &f) {
+        return true;
+    }
+
     public:
     Fast3DParser(const std::string &p, bool g);
 
+    /**
+     * parsing front-end
+     */
+
     bool parse() {
+
+        /*
+         * parse geometry layout for displaylist references first, then try to
+         * find display lists.
+         *
+         * assumptions this makes:
+         * 1.) it assumes the file structure is <script.s location>/areas/x/geo.s
+         * 2.) it assumes there is only one area
+         */
+
+        if (geometryLayout) {
+        } else {
+            parse_gbi(path);
+        }
         return true;
     }
 };
@@ -41,8 +67,18 @@ void render_level() {
     }
 }
 
+/* gui */
+uint8_t col[3] = { 128, 0, 255 };
+
+/* gl window stuff */
+
+void gfx_resize_window(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
+}
+
 /**
- * Entry point for the graphics thread. Runs until the program is exited.
+ * Entry point for the graphics thread. Runs until the program is exited,
+ * and is the main handler for the window.
  */
 
 void gfx_main() {
@@ -51,7 +87,7 @@ void gfx_main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "dedit", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 800, "dedit", NULL, NULL);
 
     if (window == NULL) {
         std::cout << "failed to create glfw context" << std::endl;
@@ -59,9 +95,17 @@ void gfx_main() {
     }
 
     glfwMakeContextCurrent(window);
-    gWindowSetup = true; /* tell the ui thread that the window setup phase is finished */
+    glViewport(0, 0, 800, 600);
+    glfwSetFramebufferSizeCallback(window, gfx_resize_window);
+    gWindowSetup = true;
 
-    while (1) {
+    while (!glfwWindowShouldClose(window)) {
+        glClearColor(col[CR] / 255.0f, col[CG] / 255.0f, col[CB] / 255.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
         render_level();
+        glfwSwapBuffers(window);
+        glfwPollEvents();
     }
+    glfwTerminate();
 }
