@@ -1,5 +1,7 @@
 #include <dedit.hxx>
 
+enum GbiTypes { VTX, TRI1, TRI2, SETGEO, CLEARGEO };
+
 struct Vtx {
     int16_t pos[3];
     int16_t tc[2];
@@ -17,13 +19,20 @@ std::vector<DisplayList> dlVector;
 
 class Fast3DParser {
     private:
+    bool geometryLayout;
     std::string path;
+
     public:
-    Fast3DParser(const std::string &p);
+    Fast3DParser(const std::string &p, bool g);
+
+    bool parse() {
+        return true;
+    }
 };
 
-Fast3DParser::Fast3DParser(const std::string &p) {
+Fast3DParser::Fast3DParser(const std::string &p, bool g) {
     path = p;
+    geometryLayout = g;
 }
 
 void render_level() {
