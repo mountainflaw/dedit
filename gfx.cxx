@@ -102,7 +102,6 @@ void gfx_main() {
     while (!glfwWindowShouldClose(window)) {
         glClearColor(col[CR] / 255.0f, col[CG] / 255.0f, col[CB] / 255.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-
         render_level();
         glfwSwapBuffers(window);
         glfwPollEvents();
