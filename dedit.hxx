@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <thread>
 #include <fstream>
+#include <filesystem>
 
 /* opengl */
 #include <GL/glew.h>
@@ -23,9 +24,10 @@ enum Col { CR, CG, CB, CA };
 
 extern std::string gWorkDirectory, gLevelFile;
 
-/* entry points*/
 void gfx_main();
-
 void obj_init();
+bool io_is_directory(const std::string &dir);
+bool io_exists(const std::string &dir);
+void io_set_lvl_dirs();
 
 extern bool gWindowSetup;
