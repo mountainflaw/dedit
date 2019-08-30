@@ -16,7 +16,7 @@ void io_set_lvl_dirs() {
     for(auto& f: std::filesystem::directory_iterator("/home/xor/sm64/sm64/levels")) {
         if (io_is_directory(f.path())) {
             std::cout << io_get_file_name(f.path().string()) << std::endl;
-            gLevelDirectories.push_back(f.path().string());
+            gLevelDirectories.push_back(io_get_file_name(f.path().string()));
         }
     }
 }

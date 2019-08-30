@@ -95,6 +95,110 @@ static int32_t pos[3] = { 0 };
 static bool actCheckbox[7] = {false};
 static uint8_t currAreaIndex = 1;
 static char areaMusic[8][128] = {"SEQ_GRASS"};
+static char bParam1[3];
+static char bParam2[3];
+static char bParam3[3];
+static char bParam4[3];
+static char modelId[97];
+
+std::string selectedObject = "Nothing selected";
+const static char hexChars[23] = "abcdefABCDEF1234567890";
+
+static bool gfx_gui_check_byte(char in) {
+    for (uint8_t i = 0; i < 23; i++) {
+        if (in == hexChars[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/* gui rendering */
+
+static void gfx_render_gui_level_editor() {
+    ImGui::Begin("Level");
+
+    /* levels */
+    static const char* currentLevel = gLevelDirectories[0].c_str();
+    if (ImGui::BeginCombo("Level", currentLevel)) {
+        for (uint8_t i = 0; i < gLevelDirectories.size(); i++) {
+            if (ImGui::Selectable(gLevelDirectories[i].c_str(), currentLevel == gLevelDirectories[i].c_str())) {
+                currentLevel = gLevelDirectories[i].c_str();
+            }
+        }
+        ImGui::EndCombo();
+    }
+
+    /* areas */
+    static const char* areaList[] = { "Area 1", "Area 2", "Area 3", "Area 4", "Area 5", "Area 6", "Area 7", "Area 8" };
+    static const char* currentArea = areaList[0];
+    if (ImGui::BeginCombo("Area", currentArea)) {
+        for (uint8_t i = 0; i < 8; i++) {
+            if (ImGui::Selectable(areaList[i], currentArea == areaList[i])) {
+                currentArea = areaList[i];
+            }
+        }
+        ImGui::EndCombo();
+    }
+    /* music */
+    ImGui::InputText("Music", areaMusic[currAreaIndex - 1], IM_ARRAYSIZE(areaMusic[0]));
+
+    ImGui::Button("Load"); ImGui::SameLine();
+    ImGui::Button("Write");
+    ImGui::End();
+}
+
+static void gfx_render_gui_selection_editor() {
+    /* obj editor */
+    ImGui::Begin(selectedObject.c_str());
+
+    if (!actCheckbox[6]) {
+        ImGui::Checkbox("Act 1", &actCheckbox[0]); ImGui::SameLine();
+        ImGui::Checkbox("Act 2", &actCheckbox[1]);
+        ImGui::Checkbox("Act 3", &actCheckbox[2]); ImGui::SameLine();
+        ImGui::Checkbox("Act 4", &actCheckbox[3]);
+        ImGui::Checkbox("Act 5", &actCheckbox[4]); ImGui::SameLine();
+        ImGui::Checkbox("Act 6", &actCheckbox[5]);
+    }
+
+    if (actCheckbox[0] && actCheckbox[1] && actCheckbox[2] && actCheckbox[3] && actCheckbox[4] && actCheckbox[5]) {
+        for (uint8_t i = 0; i < 6; i++) {
+            actCheckbox[i] = false;
+        }
+        actCheckbox[6] = true;
+    }
+
+    ImGui::Checkbox("All acts", &actCheckbox[6]);
+
+    ImGui::InputInt("X Position", &pos[0]);
+    ImGui::InputInt("Y Position", &pos[1]);
+    ImGui::InputInt("Z Position", &pos[2]);
+
+    ImGui::PushItemWidth(40);
+    ImGui::InputText("BParam 1", bParam1, IM_ARRAYSIZE(bParam1)); ImGui::SameLine();
+    ImGui::InputText("BParam 2", bParam2, IM_ARRAYSIZE(bParam2));
+    ImGui::InputText("BParam 3", bParam3, IM_ARRAYSIZE(bParam3)); ImGui::SameLine();
+    ImGui::InputText("BParam 4", bParam4, IM_ARRAYSIZE(bParam4));
+
+    ImGui::PopItemWidth();
+    ImGui::InputText("Model ID", modelId, IM_ARRAYSIZE(modelId));
+
+    /* don't let values overflow for s16 */
+    for (uint8_t i = 0; i < 3; i++) {
+        if (pos[i] > 32767) {
+            pos[i] = 32767;
+        }
+
+        if (pos[i] < -32768) {
+            pos[i] = -32768;
+        }
+    }
+
+
+
+    ImGui::Button("Apply");
+    ImGui::End();
+}
 
 /* gl window stuff */
 
@@ -111,7 +215,6 @@ void gfx_resize_window(GLFWwindow* window, int width, int height) {
 
 void gfx_main() {
     const char* glsl_version = "#version 150";
-    std::string selectedObject = "No object selected";
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); /* DO NOT CHANGE THIS */
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); /* DO NOT CHANGE THIS */
@@ -153,77 +256,8 @@ void gfx_main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        /* level manager */
-
-        ImGui::Begin("Level");
-
-        /* levels */
-        static const char* currentLevel = gLevelDirectories[0].c_str();
-        if (ImGui::BeginCombo("Level", currentLevel)) {
-            for (uint8_t i = 0; i < gLevelDirectories.size(); i++) {
-                if (ImGui::Selectable(gLevelDirectories[i].c_str(), currentLevel == gLevelDirectories[i].c_str())) {
-                    currentLevel = gLevelDirectories[i].c_str();
-                }
-            }
-            ImGui::EndCombo();
-        }
-
-        /* areas */
-        static const char* areaList[] = { "Area 1", "Area 2", "Area 3", "Area 4", "Area 5", "Area 6", "Area 7", "Area 8" };
-        static const char* currentArea = areaList[0];
-        if (ImGui::BeginCombo("Area", currentArea)) {
-            for (uint8_t i = 0; i < 8; i++) {
-                if (ImGui::Selectable(areaList[i], currentArea == areaList[i])) {
-                    currentArea = areaList[i];
-                }
-            }
-            ImGui::EndCombo();
-        }
-        /* music */
-        ImGui::InputText("Music", areaMusic[currAreaIndex - 1], IM_ARRAYSIZE(areaMusic[0]));
-
-        ImGui::Button("Load"); ImGui::SameLine();
-        ImGui::Button("Write");
-        ImGui::End();
-
-        /* obj editor */
-        ImGui::Begin(selectedObject.c_str());
-
-        if (!actCheckbox[6]) {
-            ImGui::Checkbox("Act 1", &actCheckbox[0]); ImGui::SameLine();
-            ImGui::Checkbox("Act 2", &actCheckbox[1]);
-            ImGui::Checkbox("Act 3", &actCheckbox[2]); ImGui::SameLine();
-            ImGui::Checkbox("Act 4", &actCheckbox[3]);
-            ImGui::Checkbox("Act 5", &actCheckbox[4]); ImGui::SameLine();
-            ImGui::Checkbox("Act 6", &actCheckbox[5]);
-        }
-
-        if (actCheckbox[0] && actCheckbox[1] && actCheckbox[2] && actCheckbox[3] && actCheckbox[4] && actCheckbox[5]) {
-            for (uint8_t i = 0; i < 6; i++) {
-                actCheckbox[i] = false;
-            }
-            actCheckbox[6] = true;
-        }
-
-        ImGui::Checkbox("All acts", &actCheckbox[6]);
-
-        ImGui::InputInt("X Position", &pos[0]);
-        ImGui::InputInt("Y Position", &pos[1]);
-        ImGui::InputInt("Z Position", &pos[2]);
-
-        /* don't let values overflow for s16 */
-        for (uint8_t i = 0; i < 3; i++) {
-            if (pos[i] > 32767) {
-                pos[i] = 32767;
-            }
-
-            if (pos[i] < -32768) {
-                pos[i] = -32768;
-            }
-        }
-
-        ImGui::Button("Apply");
-        ImGui::End();
+        gfx_render_gui_level_editor();
+        gfx_render_gui_selection_editor();
 
         glClearColor(col[CR] / 255.0f, col[CG] / 255.0f, col[CB] / 255.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
