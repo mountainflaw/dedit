@@ -94,23 +94,31 @@ static uint8_t col[3] = { 128, 0, 255 };
 static int32_t pos[3] = { 0 };
 static bool actCheckbox[7] = {false};
 static uint8_t currAreaIndex = 1;
-static char areaMusic[8][128] = {"SEQ_GRASS"};
-static char bParam1[3];
-static char bParam2[3];
-static char bParam3[3];
-static char bParam4[3];
+static char areaMusic[8][128] = { "SEQ_GRASS", "SEQ_GRASS", "SEQ_GRASS", "SEQ_GRASS", "SEQ_GRASS", "SEQ_GRASS", "SEQ_GRASS", "SEQ_GRASS" };
+static char bParam[4][3];
 static char modelId[97];
 
 std::string selectedObject = "Nothing selected";
-const static char hexChars[23] = "abcdefABCDEF1234567890";
+const static char hexChars[24] = "abcdefABCDEF1234567890 ";
 
-static bool gfx_gui_check_byte(char in) {
-    for (uint8_t i = 0; i < 23; i++) {
-        if (in == hexChars[i]) {
+static bool gfx_gui_check_byte(char b) {
+    for (uint8_t i = 0; i < 24; i++) {
+        std::cout << "comparing " << b << " vs " << hexChars[i] << std::endl;
+        if (b == hexChars[i]) {
             return true;
         }
     }
-    return false;
+    return false; /* not a valid hex character */
+}
+
+static void set_bparams_to_char(char* bparam) {
+    if (!gfx_gui_check_byte(bparam[0])) {
+        bparam[0] = ' ';
+    }
+
+    if (!gfx_gui_check_byte(bparam[1])) {
+        bparam[1] = ' ';
+    }
 }
 
 /* gui rendering */
@@ -148,8 +156,10 @@ static void gfx_render_gui_level_editor() {
     ImGui::End();
 }
 
-static void gfx_render_gui_selection_editor() {
-    /* obj editor */
+/* selection editor */
+
+/* obj editor */
+static void gfx_render_gui_selected_obj() {
     ImGui::Begin(selectedObject.c_str());
 
     if (!actCheckbox[6]) {
@@ -174,11 +184,11 @@ static void gfx_render_gui_selection_editor() {
     ImGui::InputInt("Y Position", &pos[1]);
     ImGui::InputInt("Z Position", &pos[2]);
 
-    ImGui::PushItemWidth(40);
-    ImGui::InputText("BParam 1", bParam1, IM_ARRAYSIZE(bParam1)); ImGui::SameLine();
-    ImGui::InputText("BParam 2", bParam2, IM_ARRAYSIZE(bParam2));
-    ImGui::InputText("BParam 3", bParam3, IM_ARRAYSIZE(bParam3)); ImGui::SameLine();
-    ImGui::InputText("BParam 4", bParam4, IM_ARRAYSIZE(bParam4));
+    ImGui::PushItemWidth(30);
+    ImGui::InputText("BParam 1", bParam[0], IM_ARRAYSIZE(bParam[0])); ImGui::SameLine();
+    ImGui::InputText("BParam 2", bParam[1], IM_ARRAYSIZE(bParam[0]));
+    ImGui::InputText("BParam 3", bParam[2], IM_ARRAYSIZE(bParam[0])); ImGui::SameLine();
+    ImGui::InputText("BParam 4", bParam[3], IM_ARRAYSIZE(bParam[0]));
 
     ImGui::PopItemWidth();
     ImGui::InputText("Model ID", modelId, IM_ARRAYSIZE(modelId));
@@ -194,10 +204,12 @@ static void gfx_render_gui_selection_editor() {
         }
     }
 
-
-
     ImGui::Button("Apply");
     ImGui::End();
+}
+
+static void gfx_render_gui_selection_editor() {
+    gfx_render_gui_selected_obj();
 }
 
 /* gl window stuff */
@@ -249,6 +261,10 @@ void gfx_main() {
     io_set_lvl_dirs();
 
     while (!glfwWindowShouldClose(window)) {
+        for (uint8_t i = 0; i < 4; i++) {
+            set_bparams_to_char(bParam[i]);
+        }
+
         glfwPollEvents();
         gfx_render_level();
 
