@@ -90,9 +90,11 @@ void ObjHandler::init() {
     if (lvlScript.is_open()) {
         while (getline(lvlScript, line)) {
             uint8_t argCounter = 0;
-            std::string unparsedLine;
             bool determined = false;
             uint8_t currArea;
+
+            std::regex regex(R"(\/\*.*?\*\/)");
+            line = std::regex_replace(line, regex, "");
 
             /* strip comments here pls */
 
