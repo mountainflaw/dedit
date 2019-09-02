@@ -90,36 +90,27 @@ void gfx_render_level() {
 /* gui */
 
 /* dummy data */
+/* obj */
+static bool selectedObj = false;
 static uint8_t col[3] = { 128, 0, 255 };
-static int32_t pos[3] = { 0 };
+static int32_t pos[3] = {0};
+static int32_t rot[3] = {0};
 static bool actCheckbox[7] = {false};
 static uint8_t currAreaIndex = 1;
 static char areaMusic[8][128] = { "SEQ_GRASS", "SEQ_GRASS", "SEQ_GRASS", "SEQ_GRASS", "SEQ_GRASS", "SEQ_GRASS", "SEQ_GRASS", "SEQ_GRASS" };
-static char bParam[4][3];
+static int32_t bParam[4] = {0};
 static char modelId[97];
+static char behaviorPtr[97];
+/* warps */
+static int32_t warpId = 0;
+static int32_t warpLevel = 0;
+static int32_t warpArea = 0;
+static int32_t warpNode = 0;
+static int32_t warpFiller = 0;
+static int32_t warpInstantOffset[3] = {0};
 
 std::string selectedObject = "Nothing selected";
-const static char hexChars[24] = "abcdefABCDEF1234567890 ";
-
-static bool gfx_gui_check_byte(char b) {
-    for (uint8_t i = 0; i < 24; i++) {
-        std::cout << "comparing " << b << " vs " << hexChars[i] << std::endl;
-        if (b == hexChars[i]) {
-            return true;
-        }
-    }
-    return false; /* not a valid hex character */
-}
-
-static void set_bparams_to_char(char* bparam) {
-    if (!gfx_gui_check_byte(bparam[0])) {
-        bparam[0] = ' ';
-    }
-
-    if (!gfx_gui_check_byte(bparam[1])) {
-        bparam[1] = ' ';
-    }
-}
+const static char hexChars[23] = "abcdefABCDEF1234567890";
 
 /* gui rendering */
 
@@ -180,18 +171,34 @@ static void gfx_render_gui_selected_obj() {
 
     ImGui::Checkbox("All acts", &actCheckbox[6]);
 
-    ImGui::InputInt("X Position", &pos[0]);
-    ImGui::InputInt("Y Position", &pos[1]);
-    ImGui::InputInt("Z Position", &pos[2]);
+    ImGui::PushItemWidth(160);
+    ImGui::InputInt("X Position", &pos[0]); ImGui::SameLine();
+    ImGui::SliderInt("X Rotation", &rot[0], -360, 360);
+    ImGui::InputInt("Y Position", &pos[1]); ImGui::SameLine();
+    ImGui::SliderInt("Y Rotation", &rot[1], -360, 360);
+    ImGui::InputInt("Z Position", &pos[2]); ImGui::SameLine();
+    ImGui::SliderInt("Z Rotation", &rot[2], -360, 360);
 
-    ImGui::PushItemWidth(30);
-    ImGui::InputText("BParam 1", bParam[0], IM_ARRAYSIZE(bParam[0])); ImGui::SameLine();
-    ImGui::InputText("BParam 2", bParam[1], IM_ARRAYSIZE(bParam[0]));
-    ImGui::InputText("BParam 3", bParam[2], IM_ARRAYSIZE(bParam[0])); ImGui::SameLine();
-    ImGui::InputText("BParam 4", bParam[3], IM_ARRAYSIZE(bParam[0]));
-
+    ImGui::PushItemWidth(80);
+    ImGui::InputInt("BParam 1", &bParam[0]); ImGui::SameLine();
+    ImGui::InputInt("BParam 2", &bParam[1]);
+    ImGui::InputInt("BParam 3", &bParam[2]); ImGui::SameLine();
+    ImGui::InputInt("BParam 4", &bParam[3]);
     ImGui::PopItemWidth();
+
+    /* don't let values overflow for u8 */
+    for (uint8_t i = 0; i < 4; i++) {
+        if (bParam[i] > 255) {
+            bParam[i] = 255;
+        }
+
+        if (bParam[i] < 0) {
+            bParam[i] = 0;
+        }
+    }
+
     ImGui::InputText("Model ID", modelId, IM_ARRAYSIZE(modelId));
+    ImGui::InputText("Behavior", behaviorPtr, IM_ARRAYSIZE(behaviorPtr));
 
     /* don't let values overflow for s16 */
     for (uint8_t i = 0; i < 3; i++) {
@@ -205,11 +212,46 @@ static void gfx_render_gui_selected_obj() {
     }
 
     ImGui::Button("Apply");
-    ImGui::End();
+}
+
+static void gfx_render_gui_selected_warp() {
+    static const char* warpTypeList[] = { "Warp Node", "Painting Warp Node", "Instant Warp" };
+    static const char* currentWarpType = warpTypeList[0];
+    if (ImGui::BeginCombo("Warp type", currentWarpType)) {
+        for (uint8_t i = 0; i < 3; i++) {
+            if (ImGui::Selectable(warpTypeList[i], currentWarpType == warpTypeList[i])) {
+                currentWarpType = warpTypeList[i];
+            }
+        }
+        ImGui::EndCombo();
+    }
+
+    if (!(currentWarpType == warpTypeList[2])) {
+        ImGui::InputInt("Node ID", &warpId);
+        ImGui::InputInt("Destination level", &warpLevel);
+        ImGui::InputInt("Destination area", &warpArea);
+        ImGui::InputInt("Destination node", &warpNode);
+        ImGui::InputInt("Filler data (unused)", &warpFiller);
+    } else { /* Instant warp */
+        ImGui::InputInt("Node ID", &warpId);
+        ImGui::InputInt("Destination area", &warpArea);
+
+        ImGui::InputInt("Offset X", &warpInstantOffset[0]);
+        ImGui::InputInt("Offset Y", &warpInstantOffset[1]);
+        ImGui::InputInt("Offset Z", &warpInstantOffset[2]);
+    }
 }
 
 static void gfx_render_gui_selection_editor() {
-    gfx_render_gui_selected_obj();
+    ImGui::Begin(selectedObject.c_str());
+    if (selectedObj) {
+        selectedObject = "Object";
+        gfx_render_gui_selected_obj();
+    } else {
+        selectedObject = "Warp";
+        gfx_render_gui_selected_warp();
+    }
+    ImGui::End();
 }
 
 /* gl window stuff */
@@ -261,9 +303,6 @@ void gfx_main() {
     io_set_lvl_dirs();
 
     while (!glfwWindowShouldClose(window)) {
-        for (uint8_t i = 0; i < 4; i++) {
-            set_bparams_to_char(bParam[i]);
-        }
 
         glfwPollEvents();
         gfx_render_level();

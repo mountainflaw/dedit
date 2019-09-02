@@ -3,6 +3,12 @@
 std::string gWorkDirectory, gLevelFile;
 bool gWindowSetup = false;
 
+class ObjHandler {
+    public:
+    ObjHandler(const std::string &f);
+    void init();
+};
+
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         std::cout << "err" << std::endl;
@@ -10,7 +16,8 @@ int main(int argc, char* argv[]) {
     }
 
     gLevelFile = argv[1];
-    obj_init();
 
+    ObjHandler objInstance(gLevelFile);
+    objInstance.init();
     gfx_main();
 }
