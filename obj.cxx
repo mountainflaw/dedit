@@ -45,8 +45,8 @@ ObjHandler::ObjHandler(const std::string &f) {
 #define NUM_OBJ_TYPES 14
 
 static const std::string objTypes[] = {
-    "area",
     "area_end",
+    "area",
     "object",
     "warp_node",
     "macro_objects",
@@ -54,16 +54,16 @@ static const std::string objTypes[] = {
     "set_background_music",
     "terrain_type",
     "show_dialog",
-    "load_mio0",
     "load_mio0_texture",
+    "load_mio0",
     "load_raw",
     "load_model_from_geo",
     "mario_pos"
 };
 
 enum ObjectTypes {
-    OBJ_AREA,
     OBJ_AREA_END,
+    OBJ_AREA,
     OBJ_OBJECT,
     OBJ_WARP_NODE,
     OBJ_MACRO_OBJECTS,
@@ -71,8 +71,8 @@ enum ObjectTypes {
     OBJ_SET_BACKGROUND_MUSIC,
     OBJ_TERRAIN_TYPE,
     OBJ_SHOW_DIALOG,
-    OBJ_LOAD_MIO0,
     OBJ_LOAD_MIO0_TEXTURE,
+    OBJ_LOAD_MIO0,
     OBJ_LOAD_RAW,
     OBJ_LOAD_MODEL_FROM_GEO,
     OBJ_MARIO_POS
@@ -104,6 +104,7 @@ void ObjHandler::init() {
                             //std::cout << objTypes[o].length() << std::endl;
                             determined = true;
                             i += objTypes[o].length();
+                            type = o;
                             continue;
                         }
                     }
