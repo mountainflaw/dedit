@@ -151,8 +151,6 @@ static void gfx_render_gui_level_editor() {
 
 /* obj editor */
 static void gfx_render_gui_selected_obj() {
-    ImGui::Begin(selectedObject.c_str());
-
     if (!actCheckbox[6]) {
         ImGui::Checkbox("Act 1", &actCheckbox[0]); ImGui::SameLine();
         ImGui::Checkbox("Act 2", &actCheckbox[1]);
@@ -210,8 +208,6 @@ static void gfx_render_gui_selected_obj() {
             pos[i] = -32768;
         }
     }
-
-    ImGui::Button("Apply");
 }
 
 static void gfx_render_gui_selected_warp() {
@@ -242,15 +238,60 @@ static void gfx_render_gui_selected_warp() {
     }
 }
 
+static void gfx_render_gui_selected_obj_macro() {
+    ImGui::InputInt("X Position", &pos[0]);
+    ImGui::InputInt("Y Position", &pos[1]);
+    ImGui::InputInt("Z Position", &pos[2]);
+    ImGui::SliderInt("Y Rotation", &rot[1], -360, 360);
+
+    ImGui::PushItemWidth(80);
+    ImGui::InputInt("BParam 1", &bParam[0]);
+    ImGui::PopItemWidth();
+
+    /* don't let values overflow for u8 */
+    for (uint8_t i = 0; i < 4; i++) {
+        if (bParam[i] > 255) {
+            bParam[i] = 255;
+        }
+
+        if (bParam[i] < 0) {
+            bParam[i] = 0;
+        }
+    }
+
+    ImGui::InputText("Macro preset", behaviorPtr, IM_ARRAYSIZE(behaviorPtr));
+
+    /* don't let values overflow for s16 */
+    for (uint8_t i = 0; i < 3; i++) {
+        if (pos[i] > 32767) {
+            pos[i] = 32767;
+        }
+
+        if (pos[i] < -32768) {
+            pos[i] = -32768;
+        }
+    }
+}
+
+static void gfx_render_gui_selected_obj_special() {
+    ImGui::InputInt("X Position", &pos[0]);
+    ImGui::InputInt("Y Position", &pos[1]);
+    ImGui::InputInt("Z Position", &pos[2]);
+    for (uint8_t i = 0; i < 3; i++) {
+        if (pos[i] > 32767) {
+            pos[i] = 32767;
+        }
+
+        if (pos[i] < -32768) {
+            pos[i] = -32768;
+        }
+    }
+}
+
 static void gfx_render_gui_selection_editor() {
     ImGui::Begin(selectedObject.c_str());
-    if (selectedObj) {
-        selectedObject = "Object";
-        gfx_render_gui_selected_obj();
-    } else {
-        selectedObject = "Warp";
-        gfx_render_gui_selected_warp();
-    }
+    selectedObject = "Special object";
+    gfx_render_gui_selected_obj_special();
     ImGui::End();
 }
 
