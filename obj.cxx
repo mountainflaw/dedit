@@ -78,6 +78,9 @@ enum ObjectTypes {
     OBJ_MARIO_POS
 };
 
+static const uint8_t objTypesMaxArgs[2][4] = {
+};
+
 /** Initialize level script. Reads and parses level script and stores the output (if valid) into gObjectList. */
 void ObjHandler::init() {
     std::string line;
@@ -115,11 +118,13 @@ void ObjHandler::init() {
                     while (line[i + distance] != ',' && i + distance < line.length()) {
                         distance++;
                     }
+                    argCounter++;
                     std::cout << "argument " << line.substr(i, distance) << std::endl;
                     i += distance;
                 }
             }
             std::cout << std::endl;
+
         }
         lvlScript.close();
     }
