@@ -30,6 +30,8 @@ struct Sm64RomLoad {
 
 std::vector<Sm64Object> gObjList;
 std::vector<Sm64RomLoad> gRomLoadList;
+struct Sm64Area gAreaList[8];
+bool gAreaUsed[8] = {false};
 
 class ObjHandler {
     private:
@@ -112,6 +114,7 @@ std::string currAreaGeo = "";
 std::string currAreaRooms = "";
 std::string currAreaMacro = "";
 int16_t currAreaDialog[2] = {-1, -1};
+int16_t marioPos[5] = {1, 0, 0, 0, 0};
 
 uint8_t currAreaIndex;
 bool inArea = false;
@@ -156,10 +159,14 @@ void ObjHandler::parseLevel(bool jump, const std::string &label) {
 
                 switch (type) {
                 case OBJ_AREA_END: /* adds previous area to area vector */
-                      break;
+                    gAreaList[currAreaIndex] = {currAreaIndex, currAreaMusic, currAreaCollision, currAreaTerrain, currAreaGeo, currAreaMacro, currAreaRooms};
+                    gAreaUsed[currAreaIndex] = true;
+                    inArea = false;
+                    break;
                 case OBJ_AREA: /* initialize area */
                       currAreaIndex = std::stoi(arguments[0]);
                       currAreaGeo = arguments[1];
+                      inArea = true;
                       break;
                 case OBJ_OBJECT:
                       break;
@@ -186,6 +193,11 @@ void ObjHandler::parseLevel(bool jump, const std::string &label) {
                 case OBJ_LOAD_MODEL_FROM_GEO:
                       break;
                 case OBJ_MARIO_POS:
+                      marioPos[0] = std::stoi(arguments[0]);
+                      marioPos[1] = std::stoi(arguments[1]);
+                      marioPos[2] = std::stoi(arguments[2]);
+                      marioPos[3] = std::stoi(arguments[3]);
+                      marioPos[4] = std::stoi(arguments[4]);
                       break;
                 case OBJ_JUMP: /* squashes calls to area if local jump, preserved if global */
                       break;
