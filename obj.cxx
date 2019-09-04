@@ -128,7 +128,7 @@ void ObjHandler::parseLevel(bool jump, const std::string &label) {
 
     if (lvlScript.is_open()) {
         bool entryPoint = false;
-        while (getline(lvlScript, line)) { /* TODO: replace this with */
+        while (getline(lvlScript, line)) { /* TODO: replace this with a setup that can seek */
             uint8_t argCounter = 0;
             bool determined = false;
 
@@ -174,7 +174,8 @@ void ObjHandler::parseLevel(bool jump, const std::string &label) {
                       break;
                 case OBJ_MACRO_OBJECTS: currAreaMacro = arguments[0]; break;
                 case OBJ_ROOMS:
-                      break;
+                    currAreaRooms = arguments[0];
+                    break;
                 case OBJ_SET_BACKGROUND_MUSIC: currAreaMusic = arguments[0]; break;
                 case OBJ_TERRAIN_TYPE: currAreaTerrain = arguments[0]; break;
                 case OBJ_SHOW_DIALOG:
