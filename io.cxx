@@ -13,7 +13,7 @@ std::string io_get_file_name(const std::string &p)
 { return std::filesystem::path(p).filename().string(); }
 
 void io_set_lvl_dirs() {
-    for (auto& f: std::filesystem::directory_iterator("/home/xor/romes/sm64/srcwork/levels")) {
+    for (auto& f: std::filesystem::directory_iterator("/home/xor/sm64/sm64/levels")) {
         if (io_is_directory(f.path())) {
             gLevelDirectories.push_back(io_get_file_name(f.path().string()));
         }
