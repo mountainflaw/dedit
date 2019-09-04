@@ -114,6 +114,26 @@ const static char hexChars[23] = "abcdefABCDEF1234567890";
 
 /* gui rendering */
 
+static void gfx_render_gui_area_editor() {
+    ImGui::Begin("Area");
+    /* areas */
+    static const char* areaList[] = { "Area 1", "Area 2", "Area 3", "Area 4", "Area 5", "Area 6", "Area 7", "Area 8" };
+    static const char* currentArea = areaList[0];
+    if (ImGui::BeginCombo("Area", currentArea)) {
+        for (uint8_t i = 0; i < 8; i++) {
+            if (ImGui::Selectable(areaList[i], currentArea == areaList[i])) {
+                currentArea = areaList[i];
+            }
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::InputText("Music", areaMusic[currAreaIndex - 1], IM_ARRAYSIZE(areaMusic[0]));
+    ImGui::InputText("Macro ojects", areaMusic[currAreaIndex - 1], IM_ARRAYSIZE(areaMusic[0]));
+    ImGui::InputText("Geometry layout", areaMusic[currAreaIndex - 1], IM_ARRAYSIZE(areaMusic[0]));
+    ImGui::InputText("Collision", areaMusic[currAreaIndex - 1], IM_ARRAYSIZE(areaMusic[0]));
+    ImGui::End();
+}
+
 static void gfx_render_gui_level_editor() {
     ImGui::Begin("Level");
 
@@ -127,20 +147,6 @@ static void gfx_render_gui_level_editor() {
         }
         ImGui::EndCombo();
     }
-
-    /* areas */
-    static const char* areaList[] = { "Area 1", "Area 2", "Area 3", "Area 4", "Area 5", "Area 6", "Area 7", "Area 8" };
-    static const char* currentArea = areaList[0];
-    if (ImGui::BeginCombo("Area", currentArea)) {
-        for (uint8_t i = 0; i < 8; i++) {
-            if (ImGui::Selectable(areaList[i], currentArea == areaList[i])) {
-                currentArea = areaList[i];
-            }
-        }
-        ImGui::EndCombo();
-    }
-    /* music */
-    ImGui::InputText("Music", areaMusic[currAreaIndex - 1], IM_ARRAYSIZE(areaMusic[0]));
 
     ImGui::Button("Load"); ImGui::SameLine();
     ImGui::Button("Write");
@@ -245,12 +251,12 @@ static void gfx_render_gui_selected_obj_macro() {
     ImGui::SliderInt("Y Rotation", &rot[1], -360, 360);
 
     ImGui::PushItemWidth(80);
-    ImGui::InputInt("BParam 1", &bParam[0]);
+    ImGui::InputInt("BParam 2", &bParam[0]);
     ImGui::PopItemWidth();
 
     /* don't let values overflow for u8 */
     for (uint8_t i = 0; i < 4; i++) {
-        if (bParam[i] > 255) {
+        if (bParam[i] > 252) {
             bParam[i] = 255;
         }
 
@@ -354,6 +360,7 @@ void gfx_main() {
 
         gfx_render_gui_level_editor();
         gfx_render_gui_selection_editor();
+        gfx_render_gui_area_editor();
 
         glClearColor(col[CR] / 255.0f, col[CG] / 255.0f, col[CB] / 255.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
