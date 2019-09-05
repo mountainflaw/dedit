@@ -166,6 +166,11 @@ void ObjHandler::parseLevel(bool jump, const std::string &label) {
                 case OBJ_AREA: /* initialize area */
                       currAreaIndex = std::stoi(arguments[0]);
                       currAreaGeo = arguments[1];
+                      currAreaMusic = "";
+                      currAreaCollision = "";
+                      currAreaTerrain = "";
+                      currAreaRooms = "";
+                      currAreaMacro = "";
                       inArea = true;
                       break;
                 case OBJ_OBJECT:
@@ -200,7 +205,7 @@ void ObjHandler::parseLevel(bool jump, const std::string &label) {
                       marioPos[3] = std::stoi(arguments[3]);
                       marioPos[4] = std::stoi(arguments[4]);
                       break;
-                case OBJ_JUMP: /* squashes calls to area if local jump, preserved if global */
+                case OBJ_JUMP: /* squashes commands to area if local jump, preserved if global */
                       break;
                 case OBJ_RETURN:
                       return;
