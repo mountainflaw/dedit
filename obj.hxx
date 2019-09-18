@@ -33,3 +33,20 @@ class ObjHandler {
     ObjHandler(const std::string &f);
     void init();
 };
+
+enum ObjectTypes {
+    OBJ_AREA_END,
+    OBJ_AREA,
+    OBJ_OBJECT,
+    OBJ_WARP_NODE,
+    OBJ_MACRO_OBJECTS,
+    OBJ_ROOMS,
+    OBJ_SET_BACKGROUND_MUSIC,
+    OBJ_TERRAIN_TYPE,
+    OBJ_SHOW_DIALOG,
+    OBJ_LOAD_MIO0_TEXTURE,
+    OBJ_LOAD_MIO0,
+    OBJ_LOAD_RAW,
+    OBJ_LOAD_MODEL_FROM_GEO,
+    OBJ_MARIO_POS
+};
