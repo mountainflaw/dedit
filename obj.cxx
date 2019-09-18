@@ -10,7 +10,7 @@ ObjHandler::ObjHandler(const std::string &f) {
 #define NUM_OBJ_TYPES 14
 
 static const std::string objTypes[] = {
-    "area_end",
+    "end_area",
     "area",
     "object",
     "warp_node",
@@ -39,40 +39,44 @@ void ObjHandler::init() {
     lvlScript.open(file, std::fstream::in);
 
     if (lvlScript.is_open()) {
+        bool entryPoint = false;
         while (getline(lvlScript, line)) {
             uint8_t argCounter = 0;
             bool determined = false;
             uint8_t currArea;
 
             std::regex regex(R"(\/\*.*?\*\/)");
-            line = std::regex_replace(line, regex, "");
+            line = std::regex_replace(line, regex, ""); /* strip objects */
 
-            /* strip comments here pls */
-
-            for (uint16_t i = 0; i < line.length(); i++) {
-                if (!determined) {
-                    for (uint8_t o = 0; o < NUM_OBJ_TYPES; o++) { /* parse level cmd */
-                        if (line[i] != ' ' && line.substr(i, objTypes[o].length()) == objTypes[o]) {
-                            std::cout << objTypes[o] << " set" << std::endl;
-                            //std::cout << objTypes[o].length() << std::endl;
-                            determined = true;
-                            i += objTypes[o].length();
-                            type = o;
-                            continue;
-                        }
-                    }
-                } else if (line[i] != ' ') { /* parse arguments */
-                    uint8_t distance = 0;
-                    while (line[i + distance] != ',' && i + distance < line.length()) {
-                        distance++;
-                    }
-                    argCounter++;
-                    std::cout << "argument " << line.substr(i, distance) << std::endl;
-                    i += distance;
-                }
+            if (line.find("glabel level_bob_entry") != std::string::npos) {
+                std::cout << "entry!" << std::endl;
+                entryPoint = true;
             }
-            std::cout << std::endl;
-
+            if (entryPoint) {
+                for (uint16_t i = 0; i < line.length(); i++) {
+                    if (!determined) {
+                        for (uint8_t o = 0; o < NUM_OBJ_TYPES; o++) { /* parse level cmd */
+                            if (line[i] != ' ' && line.substr(i, objTypes[o].length()) == objTypes[o]) {
+                                std::cout << objTypes[o] << " set" << std::endl;
+                                determined = true;
+                                i += objTypes[o].length();
+                                type = o;
+                                continue;
+                            }
+                        }
+                    } else if (line[i] != ' ') { /* parse arguments */
+                        uint8_t distance = 0;
+                        while (line[i + distance] != ',' && i + distance < line.length()) {
+                            distance++;
+                        }
+                        arguments[argCounter] = line.substr(i, distance);
+                        argCounter++;
+                        std::cout << "argument " << line.substr(i, distance) << std::endl;
+                        i += distance;
+                    }
+                }
+                std::cout << std::endl;
+            }
         }
         lvlScript.close();
     }
