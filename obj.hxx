@@ -48,5 +48,8 @@ enum ObjectTypes {
     OBJ_LOAD_MIO0,
     OBJ_LOAD_RAW,
     OBJ_LOAD_MODEL_FROM_GEO,
-    OBJ_MARIO_POS
+    OBJ_MARIO_POS,
+    OBJ_JUMP,
+    OBJ_RETURN,
+    OBJ_NONE
 };

@@ -7,7 +7,7 @@ ObjHandler::ObjHandler(const std::string &f) {
     file = f;
 }
 
-#define NUM_OBJ_TYPES 14
+#define NUM_OBJ_TYPES 16
 
 static const std::string objTypes[] = {
     "end_area",
@@ -24,6 +24,8 @@ static const std::string objTypes[] = {
     "load_raw",
     "load_model_from_geo",
     "mario_pos"
+    "jump_link",
+    "return"
 };
 
 static const uint8_t objTypesMaxArgs[2][4] = {
@@ -33,7 +35,6 @@ static const uint8_t objTypesMaxArgs[2][4] = {
 void ObjHandler::init() {
     std::string line;
     std::fstream lvlScript;
-    uint8_t type;
     std::string arguments[10];
 
     lvlScript.open(file, std::fstream::in);
@@ -43,7 +44,8 @@ void ObjHandler::init() {
         while (getline(lvlScript, line)) {
             uint8_t argCounter = 0;
             bool determined = false;
-            uint8_t currArea;
+            int8_t currArea = -1;
+            uint8_t type = OBJ_NONE;
 
             std::regex regex(R"(\/\*.*?\*\/)");
             line = std::regex_replace(line, regex, ""); /* strip objects */
@@ -77,6 +79,13 @@ void ObjHandler::init() {
                 }
                 std::cout << std::endl;
             }
+
+            /* execute command */
+            switch (type) {
+                case OBJ_RETURN:
+                return;
+            }
+
         }
         lvlScript.close();
     }
